@@ -1,3 +1,5 @@
+# github.com/davecgh/go-spew v1.1.1
+## explicit
 # github.com/dhowden/tag v0.0.0-20201120070457-d52dcb253c63
 ## explicit
 github.com/dhowden/tag
@@ -8,6 +10,7 @@ github.com/faiface/beep/effects
 github.com/faiface/beep/flac
 github.com/faiface/beep/mp3
 github.com/faiface/beep/speaker
+github.com/faiface/beep/vorbis
 github.com/faiface/beep/wav
 # github.com/gizak/termui v2.3.0+incompatible
 ## explicit
@@ -30,6 +33,12 @@ github.com/hajimehoshi/oto/internal/mux
 # github.com/icza/bitio v1.0.0
 ## explicit; go 1.13
 github.com/icza/bitio
+# github.com/jfreymuth/oggvorbis v1.0.1
+## explicit
+github.com/jfreymuth/oggvorbis
+# github.com/jfreymuth/vorbis v1.0.0
+## explicit
+github.com/jfreymuth/vorbis
 # github.com/maruel/panicparse v1.6.1
 ## explicit; go 1.11
 github.com/maruel/panicparse/stack
@@ -66,6 +75,8 @@ github.com/pkg/errors
 # github.com/rivo/uniseg v0.2.0
 ## explicit; go 1.12
 github.com/rivo/uniseg
+# github.com/stretchr/testify v1.7.0
+## explicit; go 1.13
 # golang.org/x/exp v0.0.0-20190306152737-a1d7652674e8
 ## explicit
 golang.org/x/exp/shiny/driver/gldriver
