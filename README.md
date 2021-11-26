@@ -12,10 +12,11 @@ A terminal based audio player
 
 ## Installation
 
-    go get github.com/And678/goPlayer
+    sudo apt install libasound2-dev
+    go build
+    go install
 
 This will install goPlayer to $GOPATH/bin folder.
-Also you can download binaries from 'Releases' tab.
 
 ## Usage
 
