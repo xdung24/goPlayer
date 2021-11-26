@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/dhowden/tag"
-	"github.com/mitchellh/go-homedir"
 	"log"
 	"os"
+
+	"github.com/dhowden/tag"
+	"github.com/mitchellh/go-homedir"
 )
 
 type Song struct {
@@ -12,8 +13,9 @@ type Song struct {
 	path string
 }
 
+var songDir string
+
 func main() {
-	var songDir string
 	var err error
 	if len(os.Args) > 1 {
 		songDir = os.Args[1]

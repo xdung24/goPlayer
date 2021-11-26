@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 
+	"github.com/dhowden/tag"
 	"github.com/gizak/termui"
 )
 
@@ -78,6 +81,7 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 	ui.controlsPar = termui.NewPar(
 		"[ Enter ](fg-black,bg-white)[Select](fg-black,bg-green) " +
 			"[ p ](fg-black,bg-white)[Play/Pause](fg-black,bg-green) " +
+			"[ r ](fg-black,bg-white)[Reload Song List](fg-black,bg-green) " +
 			"[Esc](fg-black,bg-white)[Stop](fg-black,bg-green) " +
 			"[Right](fg-black,bg-white)[+10s](fg-black,bg-green) " +
 			"[Left](fg-black,bg-white)[-10s](fg-black,bg-green) " +
@@ -98,6 +102,10 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 
 	termui.Handle("/sys/kbd/q", func(termui.Event) {
 		termui.StopLoop()
+	})
+
+	termui.Handle("/sys/kbd/r", func(termui.Event) {
+		ui.reloadSongList(pathPrefix)
 	})
 
 	termui.Handle("/sys/kbd/p", func(termui.Event) {
@@ -324,4 +332,39 @@ func (ui *Ui) setSong(num int, unset bool) {
 	ui.songSel = num
 	ui.songNames[num] = fmt.Sprintf("[%s](fg-black,bg-green)", ui.songNames[num])
 	ui.playList.Items = ui.songNames[skip:]
+}
+
+func (ui *Ui) reloadSongList(pathPrefix int) {
+	fileList, err := getSongList(songDir)
+	if err != nil {
+		log.Fatal("Can't get song list")
+	}
+	songs := make([]Song, 0, len(fileList))
+
+	for _, fileName := range fileList {
+		currentFile, err := os.Open(fileName)
+		if err == nil {
+			metadata, _ := tag.ReadFrom(currentFile)
+			songs = append(songs, Song{
+				Metadata: metadata,
+				path:     fileName,
+			})
+		}
+		currentFile.Close()
+	}
+	if len(songs) == 0 {
+		log.Fatal("Could find any songs to play")
+	}
+
+	ui.songs = songs
+	ui.songNames = make([]string, len(ui.songs))
+	for i, v := range ui.songs {
+		if v.Metadata != nil && v.Title() != "" {
+			ui.songNames[i] = fmt.Sprintf("[%d] %s - %s", i+1, v.Artist(), v.Title())
+		} else {
+			ui.songNames[i] = fmt.Sprintf("[%d] %s", i+1, v.path[pathPrefix+1:])
+		}
+	}
+	ui.playList.Items = ui.songNames
+	ui.setSong(0, false)
 }
