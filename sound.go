@@ -1,18 +1,20 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
+	"time"
+
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/effects"
 	"github.com/faiface/beep/flac"
 	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
+	"github.com/faiface/beep/vorbis"
 	"github.com/faiface/beep/wav"
-	"os"
-	"path/filepath"
-	"time"
 )
 
-var supportedFormats = []string{".mp3", ".wav", ".flac"}
+var supportedFormats = []string{".mp3", ".wav", ".flac", ".ogg"}
 var mainCtrl *beep.Ctrl
 var s beep.StreamSeekCloser
 var format beep.Format
@@ -33,6 +35,8 @@ func playSong(input Song) (int, error) {
 		s, format, err = wav.Decode(f)
 	case ".flac":
 		s, format, err = flac.Decode(f)
+	case ".ogg":
+		s, format, err = vorbis.Decode(f)
 	}
 	if err != nil {
 		return 0, err
