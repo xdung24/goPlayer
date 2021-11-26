@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/gizak/termui"
 )
 
@@ -198,10 +199,10 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 
 	ui.songNames = make([]string, len(ui.songs))
 	for i, v := range ui.songs {
-		if v.Metadata != nil {
+		if v.Metadata != nil && v.Title() != "" {
 			ui.songNames[i] = fmt.Sprintf("[%d] %s - %s", i+1, v.Artist(), v.Title())
 		} else {
-			ui.songNames[i] = fmt.Sprintf("[%d] %s", i+1, v.path[pathPrefix:])
+			ui.songNames[i] = fmt.Sprintf("[%d] %s", i+1, v.path[pathPrefix+1:])
 		}
 	}
 	ui.playList.Items = ui.songNames
