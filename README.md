@@ -3,6 +3,8 @@ A terminal based audio player
 
 ![screenshot](../assets/screenshot.png)
 
+![screenshot in windows 10](../assets/screenshot-windows10.png)
+
 ## Features
 
 * Supports mp3, flac, wav formats
