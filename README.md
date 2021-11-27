@@ -7,7 +7,7 @@ A terminal based audio player
 
 ## Features
 
-* Supports mp3, flac, wav formats
+* Supports mp3, flac, wav formats, ogg vorbit
 * Displays metadata
 * Volume controls
 * Ability to rewind and fast-forward audio
@@ -37,6 +37,7 @@ If used without path parameter, goPlayer will assume default music folder: `~/Mu
 * [termui](https://github.com/gizak/termui/)
 * [beep](https://github.com/faiface/beep)
 * [tag](https://github.com/dhowden/tag/)
-
+* [oggvorbis](https://github.com/jfreymuth/oggvorbis/)
+* 
 ## License
 MIT
