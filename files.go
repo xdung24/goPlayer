@@ -1,24 +1,28 @@
 package main
 
 import (
-	"os"
+	"io/fs"
 	"path/filepath"
 )
 
 func getSongList(input string) ([]string, error) {
-
 	result := make([]string, 0)
-	addPath := func(path string, info os.FileInfo, err error) error {
+	addPath := func(fpath string, dirEntry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-
-		if !info.IsDir() && Contains(supportedFormats, filepath.Ext(path)) {
-			result = append(result, path)
+		// skip hidden dir
+		if dirEntry.IsDir() && dirEntry.Name()[:1] == "." {
+			return filepath.SkipDir
+		}
+		if !dirEntry.IsDir() && // not a directory
+			Contains(supportedFormats, filepath.Ext(fpath)) && // is supported format
+			dirEntry.Name()[:1] != "." { // skip hidden files
+			result = append(result, fpath)
 		}
 		return nil
 	}
-	err := filepath.Walk(input, addPath)
+	err := filepath.WalkDir(input, addPath)
 
 	return result, err
 
