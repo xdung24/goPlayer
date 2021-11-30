@@ -12,3 +12,6 @@ jobs:
       - run:
           name: Run tests
           command: go test -v
+      - run:
+          name: Build binary
+          command: go build
