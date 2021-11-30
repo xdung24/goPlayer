@@ -6,13 +6,9 @@ jobs:
       - image: circleci/golang:1.17.3
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - go-mod-v4-{{ checksum "go.sum" }}
-      - save_cache:
-          key: go-mod-v4-{{ checksum "go.sum" }}
-          paths:
-            - "/go/pkg/mod"
+      - run:
+          name: Install Package alsa
+          command: apt install libasound2-dev
       - run:
           name: Run tests
           command: go test -v
