@@ -16,7 +16,7 @@ func getSongList(input string) ([]string, error) {
 			return filepath.SkipDir
 		}
 		if !dirEntry.IsDir() && // not a directory
-			Contains(supportedFormats, filepath.Ext(fpath)) && // is supported format
+			contains(supportedFormats, filepath.Ext(fpath)) && // is supported format
 			dirEntry.Name()[:1] != "." { // skip hidden files
 			result = append(result, fpath)
 		}
@@ -28,7 +28,7 @@ func getSongList(input string) ([]string, error) {
 
 }
 
-func Contains(arr []string, input string) bool {
+func contains(arr []string, input string) bool {
 	for _, v := range arr {
 		if v == input {
 			return true

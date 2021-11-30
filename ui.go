@@ -32,13 +32,11 @@ type Ui struct {
 	songs     []Song
 	songNames []string
 
-	volume int
-
-	songNum int
-
-	songSel int
-	songPos int
-	songLen int
+	volume  int
+	songNum int // index of playing song
+	songSel int // index of the song that is playing
+	songPos int // index of position of the song that is being played
+	songLen int // length of the song
 
 	OnSelect selectCallback
 	OnPause  pauseCallback
@@ -81,7 +79,7 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 	ui.controlsPar = termui.NewPar(
 		"[ Enter ](fg-black,bg-white)[Select](fg-black,bg-green) " +
 			"[ p ](fg-black,bg-white)[Play/Pause](fg-black,bg-green) " +
-			"[ r ](fg-black,bg-white)[Reload Song List](fg-black,bg-green) " +
+			"[ r ](fg-black,bg-white)[Refresh](fg-black,bg-green) " +
 			"[Esc](fg-black,bg-white)[Stop](fg-black,bg-green) " +
 			"[Right](fg-black,bg-white)[+10s](fg-black,bg-green) " +
 			"[Left](fg-black,bg-white)[-10s](fg-black,bg-green) " +
@@ -131,6 +129,9 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 					ui.songNum++
 					if ui.songNum >= len(ui.songs) {
 						ui.songNum = 0
+						ui.setSong(0, true)
+					} else {
+						ui.songDown()
 					}
 					ui.playSong(ui.songNum)
 				}
@@ -206,13 +207,7 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 	})
 
 	ui.songNames = make([]string, len(ui.songs))
-	for i, v := range ui.songs {
-		if v.Metadata != nil && v.Title() != "" {
-			ui.songNames[i] = fmt.Sprintf("[%d] %s - %s", i+1, v.Artist(), v.Title())
-		} else {
-			ui.songNames[i] = fmt.Sprintf("[%d] %s", i+1, v.path[pathPrefix+1:])
-		}
-	}
+	ui.updateSongNames(pathPrefix)
 	ui.playList.Items = ui.songNames
 	ui.setSong(0, false)
 
@@ -358,13 +353,21 @@ func (ui *Ui) reloadSongList(pathPrefix int) {
 
 	ui.songs = songs
 	ui.songNames = make([]string, len(ui.songs))
+	ui.updateSongNames(pathPrefix)
+	ui.playList.Items = ui.songNames
+	ui.setSong(0, false)
+}
+
+func (ui *Ui) updateSongNames(pathPrefix int) {
 	for i, v := range ui.songs {
 		if v.Metadata != nil && v.Title() != "" {
-			ui.songNames[i] = fmt.Sprintf("[%d] %s - %s", i+1, v.Artist(), v.Title())
+			if v.Artist() != "" {
+				ui.songNames[i] = fmt.Sprintf("[%d] %s - %s", i+1, v.Artist(), v.Title())
+			} else {
+				ui.songNames[i] = fmt.Sprintf("[%d] %s", i+1, v.Title())
+			}
 		} else {
 			ui.songNames[i] = fmt.Sprintf("[%d] %s", i+1, v.path[pathPrefix+1:])
 		}
 	}
-	ui.playList.Items = ui.songNames
-	ui.setSong(0, false)
 }
