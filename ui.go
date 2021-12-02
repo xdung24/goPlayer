@@ -27,7 +27,8 @@ type Ui struct {
 	playList      *termui.List
 	scrollerGauge *termui.Gauge
 	volumeGauge   *termui.Gauge
-	controlsPar   *termui.Par
+	controlsPar1  *termui.Par
+	controlsPar2  *termui.Par
 
 	songs     []Song
 	songNames []string
@@ -76,25 +77,33 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 	ui.volumeGauge.Height = 3
 	ui.volumeGauge.Percent = ui.volume
 
-	ui.controlsPar = termui.NewPar(
-		"[ Enter ](fg-black,bg-white)[Select](fg-black,bg-green) " +
-			"[ p ](fg-black,bg-white)[Play/Pause](fg-black,bg-green) " +
-			"[ r ](fg-black,bg-white)[Refresh](fg-black,bg-green) " +
-			"[Esc](fg-black,bg-white)[Stop](fg-black,bg-green) " +
-			"[Right](fg-black,bg-white)[+10s](fg-black,bg-green) " +
-			"[Left](fg-black,bg-white)[-10s](fg-black,bg-green) " +
-			"[ + ](fg-black,bg-white)[+Volume](fg-black,bg-green) " +
+	ui.controlsPar1 = termui.NewPar(
+		"[ < ](fg-black,bg-white)[Previous](fg-black,bg-green) " +
+			"[Left ](fg-black,bg-white)[-10s](fg-black,bg-green) " +
 			"[ - ](fg-black,bg-white)[-Volume](fg-black,bg-green) " +
+			"[ Up ](fg-black,bg-white)[Move Up  ](fg-black,bg-green) " +
+			"[Enter](fg-black,bg-white)[Select](fg-black,bg-green) ")
+	ui.controlsPar1.Border = false
+	ui.controlsPar1.Height = 1
+	ui.controlsPar2 = termui.NewPar(
+		"[ > ](fg-black,bg-white)[Next    ](fg-black,bg-green) " +
+			"[Right](fg-black,bg-white)[+10s](fg-black,bg-green) " +
+			"[ + ](fg-black,bg-white)[+Volume](fg-black,bg-green) " +
+			"[Down](fg-black,bg-white)[Move Down](fg-black,bg-green) " +
+			"[ Esc ](fg-black,bg-white)[Stop  ](fg-black,bg-green) " +
+			"[ Space ](fg-black,bg-white)[Pause/Resume](fg-black,bg-green) " +
+			"[ r ](fg-black,bg-white)[Refresh](fg-black,bg-green) " +
 			"[ q ](fg-black,bg-white)[Exit](fg-black,bg-green) ")
-	ui.controlsPar.Border = false
-	ui.controlsPar.Height = 1
+	ui.controlsPar2.Border = false
+	ui.controlsPar2.Height = 1
 
 	termui.Body.AddRows(
 		termui.NewRow(
 			termui.NewCol(6, 0, ui.infoList, ui.scrollerGauge, ui.volumeGauge),
 			termui.NewCol(6, 0, ui.playList)),
-		termui.NewRow(
-			termui.NewCol(12, 0, ui.controlsPar)))
+		termui.NewRow(termui.NewCol(12, 0, ui.controlsPar1)),
+		termui.NewRow(termui.NewCol(12, 0, ui.controlsPar2)),
+	)
 
 	ui.realign()
 
@@ -102,11 +111,19 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 		termui.StopLoop()
 	})
 
+	termui.Handle("/sys/kbd/Q", func(termui.Event) {
+		termui.StopLoop()
+	})
+
 	termui.Handle("/sys/kbd/r", func(termui.Event) {
 		ui.reloadSongList(pathPrefix)
 	})
 
-	termui.Handle("/sys/kbd/p", func(termui.Event) {
+	termui.Handle("/sys/kbd/R", func(termui.Event) {
+		ui.reloadSongList(pathPrefix)
+	})
+
+	termui.Handle("/sys/kbd/<space>", func(termui.Event) {
 		if ui.songNum != -1 {
 			if ui.state == Playing {
 				ui.OnPause(true)
@@ -206,6 +223,22 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 		ui.realign()
 	})
 
+	termui.Handle("/sys/kbd/<", func(e termui.Event) {
+		ui.previous()
+	})
+
+	termui.Handle("/sys/kbd/,", func(e termui.Event) {
+		ui.previous()
+	})
+
+	termui.Handle("/sys/kbd/>", func(e termui.Event) {
+		ui.next()
+	})
+
+	termui.Handle("/sys/kbd/.", func(e termui.Event) {
+		ui.next()
+	})
+
 	ui.songNames = make([]string, len(ui.songs))
 	ui.updateSongNames(pathPrefix)
 	ui.playList.Items = ui.songNames
@@ -237,8 +270,9 @@ func (ui *Ui) playSong(number int) {
 
 func (ui *Ui) realign() {
 	termHeight := termui.TermHeight()
-	ui.playList.Height = termHeight - ui.controlsPar.Height
-	ui.infoList.Height = termHeight - ui.controlsPar.Height - ui.scrollerGauge.Height - ui.volumeGauge.Height
+	parHeight := ui.controlsPar1.Height
+	ui.playList.Height = termHeight - parHeight*2
+	ui.infoList.Height = termHeight - (parHeight * 2) - ui.scrollerGauge.Height - ui.volumeGauge.Height
 	termui.Body.Width = termui.TermWidth()
 	termui.Body.Align()
 	termui.Clear()
@@ -369,5 +403,23 @@ func (ui *Ui) updateSongNames(pathPrefix int) {
 		} else {
 			ui.songNames[i] = fmt.Sprintf("[%d] %s", i+1, v.path[pathPrefix+1:])
 		}
+	}
+}
+
+func (ui *Ui) previous() {
+	if ui.songSel > 0 {
+		ui.songUp()
+		ui.playSong(ui.songSel)
+		termui.Clear()
+		termui.Render(termui.Body)
+	}
+}
+
+func (ui *Ui) next() {
+	if ui.songSel < len(ui.songNames)-1 {
+		ui.songDown()
+		ui.playSong(ui.songSel)
+		termui.Clear()
+		termui.Render(termui.Body)
 	}
 }
