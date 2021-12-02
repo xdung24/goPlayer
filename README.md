@@ -1,7 +1,7 @@
 # GoPlayer
 A terminal based audio player
 
-![screenshot](../assets/screenshot.png)
+![screenshot](../assets/screenshot-ubuntu.png)
 
 ![screenshot in windows 10](../assets/screenshot-windows10.png)
 

@@ -48,7 +48,7 @@ type Ui struct {
 
 	volume  int
 	songNum int // index of playing song
-	songSel int // index of the song that is playing
+	songSel int // index of the song that is selected
 	songPos int // index of position of the song that is being played
 	songLen int // length of the song
 
