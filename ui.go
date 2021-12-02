@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
+	"strings"
 
 	"github.com/dhowden/tag"
 	"github.com/gizak/termui"
@@ -16,6 +18,17 @@ const (
 	Playing
 	Paused
 )
+
+type uiPlayMode int
+
+const (
+	LoopAll uiPlayMode = iota
+	LoopOne
+	NoLoop
+	Random
+)
+
+var playModeName = []string{"Loop All", "Loop One", "No Loop", "Random"}
 
 type selectCallback func(Song) (int, error)
 type pauseCallback func(bool)
@@ -44,7 +57,8 @@ type Ui struct {
 	OnSeek   seekCallback
 	OnVolume volumeCallback
 
-	state uiState
+	state    uiState
+	playMode uiPlayMode
 }
 
 func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
@@ -82,7 +96,9 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 			"[Left ](fg-black,bg-white)[-10s](fg-black,bg-green) " +
 			"[ - ](fg-black,bg-white)[-Volume](fg-black,bg-green) " +
 			"[ Up ](fg-black,bg-white)[Move Up  ](fg-black,bg-green) " +
-			"[Enter](fg-black,bg-white)[Select](fg-black,bg-green) ")
+			"[Enter](fg-black,bg-white)[Select](fg-black,bg-green) " +
+			"[ m ](fg-black,bg-white)[Change Play Mode](fg-black,bg-green) " +
+			"[ " + playModeName[ui.playMode] + " ](fg-black,bg-yellow)")
 	ui.controlsPar1.Border = false
 	ui.controlsPar1.Height = 1
 	ui.controlsPar2 = termui.NewPar(
@@ -101,7 +117,7 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 		termui.NewRow(
 			termui.NewCol(6, 0, ui.infoList, ui.scrollerGauge, ui.volumeGauge),
 			termui.NewCol(6, 0, ui.playList)),
-		termui.NewRow(termui.NewCol(12, 0, ui.controlsPar1)),
+		termui.NewRow(termui.NewCol(6, 0, ui.controlsPar1)),
 		termui.NewRow(termui.NewCol(12, 0, ui.controlsPar2)),
 	)
 
@@ -143,14 +159,7 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 				ui.scrollerGauge.Percent = int(float32(ui.songPos) / float32(ui.songLen) * 100)
 				ui.scrollerGauge.Label = fmt.Sprintf("%d:%.2d / %d:%.2d", ui.songPos/60, ui.songPos%60, ui.songLen/60, ui.songLen%60)
 				if ui.scrollerGauge.Percent >= 100 {
-					ui.songNum++
-					if ui.songNum >= len(ui.songs) {
-						ui.songNum = 0
-						ui.setSong(0, true)
-					} else {
-						ui.songDown()
-					}
-					ui.playSong(ui.songNum)
+					ui.songEndEvent()
 				}
 				termui.Clear()
 				termui.Render(termui.Body)
@@ -178,12 +187,7 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 	})
 
 	termui.Handle("/sys/kbd/<escape>", func(termui.Event) {
-		ui.playSong(ui.songNum)
-		ui.OnPause(true)
-		ui.state = Stopped
-		ui.scrollerGauge.Percent = 0
-		ui.scrollerGauge.Label = "0:00 / 0:00"
-		ui.renderStatus()
+		ui.stopPlayer()
 	})
 
 	termui.Handle("/sys/kbd/<enter>", func(termui.Event) {
@@ -237,6 +241,14 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 
 	termui.Handle("/sys/kbd/.", func(e termui.Event) {
 		ui.next()
+	})
+
+	termui.Handle("/sys/kbd/m", func(e termui.Event) {
+		ui.togglePlayMode()
+	})
+
+	termui.Handle("/sys/kbd/M", func(e termui.Event) {
+		ui.togglePlayMode()
 	})
 
 	ui.songNames = make([]string, len(ui.songs))
@@ -421,5 +433,53 @@ func (ui *Ui) next() {
 		ui.playSong(ui.songSel)
 		termui.Clear()
 		termui.Render(termui.Body)
+	}
+}
+
+func (ui *Ui) togglePlayMode() {
+	oldName := playModeName[ui.playMode]
+	ui.playMode++
+	if ui.playMode > Random {
+		ui.playMode = LoopAll
+	}
+	newName := playModeName[ui.playMode]
+	ui.controlsPar1.Text = strings.Replace(ui.controlsPar1.Text, oldName, newName, 1)
+	termui.Clear()
+	termui.Render(termui.Body)
+}
+
+func (ui *Ui) stopPlayer() {
+	ui.playSong(ui.songNum)
+	ui.OnPause(true)
+	ui.state = Stopped
+	ui.scrollerGauge.Percent = 0
+	ui.scrollerGauge.Label = "0:00 / 0:00"
+	ui.renderStatus()
+}
+
+func (ui *Ui) songEndEvent() {
+	switch ui.playMode {
+	case LoopAll:
+		ui.songNum++
+		if ui.songNum >= len(ui.songs) {
+			ui.songNum = 0
+			ui.setSong(0, true)
+		} else {
+			ui.songDown()
+		}
+		ui.playSong(ui.songNum)
+	case LoopOne:
+		ui.playSong(ui.songNum)
+	case NoLoop:
+		if ui.songNum+1 == len(ui.songs) {
+			ui.stopPlayer()
+		} else {
+			ui.songDown()
+			ui.playSong(ui.songNum)
+		}
+	case Random:
+		ui.songNum = rand.Intn(len(ui.songs))
+		ui.setSong(ui.songNum, true)
+		ui.playSong(ui.songNum)
 	}
 }
