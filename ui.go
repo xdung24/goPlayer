@@ -474,6 +474,7 @@ func (ui *Ui) songEndEvent() {
 		if ui.songNum+1 == len(ui.songs) {
 			ui.stopPlayer()
 		} else {
+			ui.songNum++
 			ui.songDown()
 			ui.playSong(ui.songNum)
 		}
