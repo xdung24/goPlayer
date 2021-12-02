@@ -117,7 +117,7 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 		termui.NewRow(
 			termui.NewCol(6, 0, ui.infoList, ui.scrollerGauge, ui.volumeGauge),
 			termui.NewCol(6, 0, ui.playList)),
-		termui.NewRow(termui.NewCol(6, 0, ui.controlsPar1)),
+		termui.NewRow(termui.NewCol(12, 0, ui.controlsPar1)),
 		termui.NewRow(termui.NewCol(12, 0, ui.controlsPar2)),
 	)
 
