@@ -40,8 +40,9 @@ func playVideo(input Song) (int, error) {
 		return 0, err
 	}
 
-	// Console/headless environment: use mpv
+	// Console/headless environment: use mpv with DISPLAY=:0
 	cmd = exec.Command("mpv", input.path)
+	cmd.Env = append(os.Environ(), "DISPLAY=:0")
 	err = cmd.Run()
 	if err != nil {
 		return 0, err
