@@ -27,7 +27,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev
 
       - name: Build
-        run: GOOS=linux GOARCH=amd64 go build -ldflags="-extldflags=-static" -o goplayer
+        run: GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build goplayer-o goplayer
         shell: bash
 
       - name: Rename binary
@@ -53,10 +53,10 @@ jobs:
           go-version: '1.25'
 
       - name: Install 32-bit audio dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc-multilib libc6-dev-i386 libasound2-dev:i386
+        run: sudo apt-get update && sudo apt-get install -y gcc-multilib libc6-dev libasound2-dev
 
       - name: Build
-        run: GOOS=linux GOARCH=386 go build -ldflags="-extldflags=-static" -o goplayer
+        run: GOOS=linux GOARCH=386 CGO_ENABLED=1 go build goplayer-o goplayer
         shell: bash
 
       - name: Rename binary
@@ -85,7 +85,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu libasound2-dev
 
       - name: Build
-        run: CC=aarch64-linux-gnu-gcc GOOS=linux GOARCH=arm64 go build -ldflags="-extldflags=-static" -o goplayer
+        run: CC=aarch64-linux-gnu-gcc GOOS=linux GOARCH=arm64 CGO_ENABLED=1 go build goplayer-o goplayer
         shell: bash
 
       - name: Rename binary
@@ -114,7 +114,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gcc-arm-linux-gnueabihf libasound2-dev
 
       - name: Build
-        run: CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=7 go build -ldflags="-extldflags=-static" -o goplayer
+        run: CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 go build goplayer-o goplayer
         shell: bash
 
       - name: Rename binary
@@ -140,7 +140,7 @@ jobs:
           go-version: '1.25'
 
       - name: Build
-        run: go build -o goplayer.exe
+        run: CGO_ENABLED=1 go build -o goplayer.exe
         shell: bash
 
       - name: Rename binary
