@@ -18,16 +18,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.25'
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-      - name: Install audio dependencies
-        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build
-        run: GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -o goplayer-linux-x64
+      - name: Build with Docker
+        run: |
+          docker run --rm --platform linux/amd64 \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            docker.io/dunglex/goplayer-builder:x64 \
+            sh -c "CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags='-extldflags=-static' -buildvcs=false -o goplayer-linux-x64"
         shell: bash
 
       - name: Upload binary
@@ -43,16 +46,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.25'
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-      - name: Install 32-bit audio dependencies
-        run: sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install -y gcc-multilib libc6-dev-i386 libasound2-dev:i386
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build
-        run: PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig GOOS=linux GOARCH=386 CGO_ENABLED=1 go build -o goplayer-linux-x86
+      - name: Build with Docker
+        run: |
+          docker run --rm --platform linux/386 \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            docker.io/dunglex/goplayer-builder:x86 \
+            sh -c "CGO_ENABLED=1 GOOS=linux GOARCH=386 go build -ldflags='-extldflags=-static' -buildvcs=false -o goplayer-linux-x86"
         shell: bash
 
       - name: Upload binary
@@ -79,8 +85,8 @@ jobs:
           docker run --rm --platform linux/arm64 \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            golang:1.25 \
-            bash -c "apt-get update && apt-get install -y git libasound2-dev && CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -buildvcs=false -o goplayer-linux-arm64"
+            docker.io/dunglex/goplayer-builder:arm64 \
+            sh -c "CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -ldflags='-extldflags=-static' -buildvcs=false -o goplayer-linux-arm64"
         shell: bash
 
       - name: Upload binary
@@ -107,8 +113,8 @@ jobs:
           docker run --rm --platform linux/arm/v7 \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            golang:1.25 \
-            bash -c "apt-get update && apt-get install -y git libasound2-dev && CGO_ENABLED=1 GOOS=linux GOARCH=arm GOARM=7 go build -buildvcs=false -o goplayer-linux-armv7"
+            docker.io/dunglex/goplayer-builder:armv7 \
+            sh -c "CGO_ENABLED=1 GOOS=linux GOARCH=arm GOARM=7 go build -ldflags='-extldflags=-static' -buildvcs=false -o goplayer-linux-armv7"
         shell: bash
 
       - name: Upload binary

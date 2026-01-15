@@ -1,0 +1,16 @@
+ARG TARGETPLATFORM=linux/arm64
+FROM --platform=${TARGETPLATFORM} golang:1.25-alpine
+
+RUN apk add --no-cache git musl-dev gcc make wget linux-headers pkgconf
+
+# Build static ALSA library with reduced optimization to prevent segfaults
+RUN wget -q https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.14.tar.bz2 && \
+    tar xjf alsa-lib-1.2.14.tar.bz2 && \
+    cd alsa-lib-1.2.14 && \
+    CFLAGS="-O1" ./configure --prefix=/usr/local --enable-static --disable-shared && \
+    make -j1 && \
+    make install && \
+    cd .. && \
+    rm -rf alsa-lib-1.2.14 alsa-lib-1.2.14.tar.bz2
+
+WORKDIR /workspace
