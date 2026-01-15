@@ -80,7 +80,7 @@ jobs:
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             golang:1.25 \
-            bash -c "apt-get update && apt-get install -y libasound2-dev && CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -o goplayer-linux-arm64"
+            bash -c "apt-get update && apt-get install -y git libasound2-dev && CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -o goplayer-linux-arm64"
         shell: bash
 
       - name: Upload binary
@@ -108,7 +108,7 @@ jobs:
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             golang:1.25 \
-            bash -c "apt-get update && apt-get install -y libasound2-dev && CGO_ENABLED=1 GOOS=linux GOARCH=arm GOARM=7 go build -o goplayer-linux-armv7"
+            bash -c "apt-get update && apt-get install -y git libasound2-dev && CGO_ENABLED=1 GOOS=linux GOARCH=arm GOARM=7 go build -o goplayer-linux-armv7"
         shell: bash
 
       - name: Upload binary
