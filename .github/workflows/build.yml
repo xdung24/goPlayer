@@ -79,8 +79,8 @@ jobs:
           docker run --rm --platform linux/arm64 \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            golang:1.25 \
-            bash -c "apt-get update && apt-get install -y git libasound2-dev && CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -buildvcs=false -o goplayer-linux-arm64"
+            golang:1.25-alpine \
+            bash -c "apk add --no-cache git alsa-lib-dev musl-dev gcc && CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -ldflags='-extldflags=-static' -buildvcs=false -o goplayer-linux-arm64"
         shell: bash
 
       - name: Upload binary
@@ -107,8 +107,8 @@ jobs:
           docker run --rm --platform linux/arm/v7 \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            golang:1.25 \
-            bash -c "apt-get update && apt-get install -y git libasound2-dev && CGO_ENABLED=1 GOOS=linux GOARCH=arm GOARM=7 go build -buildvcs=false -o goplayer-linux-armv7"
+            golang:1.25-alpine \
+            bash -c "apk add --no-cache git alsa-lib-dev musl-dev gcc && CGO_ENABLED=1 GOOS=linux GOARCH=arm GOARM=7 go build -ldflags='-extldflags=-static' -buildvcs=false -o goplayer-linux-armv7"
         shell: bash
 
       - name: Upload binary
