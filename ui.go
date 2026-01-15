@@ -171,14 +171,14 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 	})
 
 	termui.Handle("/sys/kbd/<right>", func(termui.Event) {
-		if ui.songNum != -1 {
+		if ui.songNum != -1 && !ui.songs[ui.songNum].isVideo {
 			ui.songPos += 10
 			ui.OnSeek(ui.songPos)
 		}
 	})
 
 	termui.Handle("/sys/kbd/<left>", func(termui.Event) {
-		if ui.songNum != -1 {
+		if ui.songNum != -1 && !ui.songs[ui.songNum].isVideo {
 			ui.songPos -= 10
 			if ui.songPos < 0 {
 				ui.songPos = 0
@@ -203,19 +203,27 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 	})
 
 	termui.Handle("/sys/kbd/=", func(termui.Event) {
-		ui.volumeUp()
+		if ui.songNum != -1 && !ui.songs[ui.songNum].isVideo {
+			ui.volumeUp()
+		}
 	})
 
 	termui.Handle("/sys/kbd/+", func(termui.Event) {
-		ui.volumeUp()
+		if ui.songNum != -1 && !ui.songs[ui.songNum].isVideo {
+			ui.volumeUp()
+		}
 	})
 
 	termui.Handle("/sys/kbd/-", func(termui.Event) {
-		ui.volumeDown()
+		if ui.songNum != -1 && !ui.songs[ui.songNum].isVideo {
+			ui.volumeDown()
+		}
 	})
 
 	termui.Handle("/sys/kbd/_", func(termui.Event) {
-		ui.volumeDown()
+		if ui.songNum != -1 && !ui.songs[ui.songNum].isVideo {
+			ui.volumeDown()
+		}
 	})
 
 	termui.Handle("/sys/kbd/<down>", func(termui.Event) {
@@ -294,19 +302,35 @@ func (ui *Ui) realign() {
 
 func (ui *Ui) renderSong() {
 	if ui.songSel != -1 {
-		lyrics := ui.songs[ui.songSel].Lyrics()
-		trackNum, _ := ui.songs[ui.songSel].Track()
-		ui.infoList.Items = []string{
-			"[Artist:](fg-green) " + ui.songs[ui.songSel].Artist(),
-			"[Title:](fg-green)  " + ui.songs[ui.songSel].Title(),
-			"[Album:](fg-green)  " + ui.songs[ui.songSel].Album(),
-			fmt.Sprintf("[Track:](fg-green)  %d", trackNum),
-			"[Genre:](fg-green)  " + ui.songs[ui.songSel].Genre(),
-			fmt.Sprintf("[Year:](fg-green)   %d", ui.songs[ui.songSel].Year()),
+		song := ui.songs[ui.songSel]
+
+		// Build info items
+		infoItems := []string{}
+
+		// Add media type
+		mediaType := "Music"
+		if song.isVideo {
+			mediaType = "Video"
 		}
-		if lyrics != "" {
-			ui.infoList.Items = append(ui.infoList.Items, "Lyrics:  "+lyrics)
+		infoItems = append(infoItems, "[Type:](fg-green)    "+mediaType)
+
+		if song.Metadata != nil {
+			lyrics := song.Lyrics()
+			trackNum, _ := song.Track()
+			infoItems = append(infoItems,
+				"[Artist:](fg-green) "+song.Artist(),
+				"[Title:](fg-green)  "+song.Title(),
+				"[Album:](fg-green)  "+song.Album(),
+				fmt.Sprintf("[Track:](fg-green)  %d", trackNum),
+				"[Genre:](fg-green)  "+song.Genre(),
+				fmt.Sprintf("[Year:](fg-green)   %d", song.Year()),
+			)
+			if lyrics != "" {
+				infoItems = append(infoItems, "Lyrics:  "+lyrics)
+			}
 		}
+
+		ui.infoList.Items = infoItems
 	} else {
 		ui.infoList.Items = []string{}
 	}
@@ -387,9 +411,11 @@ func (ui *Ui) reloadSongList(pathPrefix int) {
 		currentFile, err := os.Open(fileName)
 		if err == nil {
 			metadata, _ := tag.ReadFrom(currentFile)
+			isVideo := isVideoFile(fileName)
 			songs = append(songs, Song{
 				Metadata: metadata,
 				path:     fileName,
+				isVideo:  isVideo,
 			})
 		}
 		currentFile.Close()
@@ -407,15 +433,23 @@ func (ui *Ui) reloadSongList(pathPrefix int) {
 
 func (ui *Ui) updateSongNames(pathPrefix int) {
 	for i, v := range ui.songs {
+		var displayName string
 		if v.Metadata != nil && v.Title() != "" {
 			if v.Artist() != "" {
-				ui.songNames[i] = fmt.Sprintf("[%d] %s - %s", i+1, v.Artist(), v.Title())
+				displayName = fmt.Sprintf("[%d] %s - %s", i+1, v.Artist(), v.Title())
 			} else {
-				ui.songNames[i] = fmt.Sprintf("[%d] %s", i+1, v.Title())
+				displayName = fmt.Sprintf("[%d] %s", i+1, v.Title())
 			}
 		} else {
-			ui.songNames[i] = fmt.Sprintf("[%d] %s", i+1, v.path[pathPrefix+1:])
+			displayName = fmt.Sprintf("[%d] %s", i+1, v.path[pathPrefix+1:])
 		}
+
+		// Add video tag if it's a video
+		if v.isVideo {
+			displayName = "[VIDEO] " + displayName
+		}
+
+		ui.songNames[i] = displayName
 	}
 }
 
