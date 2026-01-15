@@ -14,7 +14,7 @@ import (
 	"github.com/faiface/beep/wav"
 )
 
-var supportedFormats = []string{".mp3", ".wav", ".flac", ".ogg"}
+var supportedFormats = []string{".mp3", ".wav", ".flac", ".ogg", ".mp4", ".mkv", ".avi", ".mov", ".webm"}
 var mainCtrl *beep.Ctrl
 var s beep.StreamSeekCloser
 var format beep.Format
