@@ -23,11 +23,8 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: Install audio dependencies
-        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
-
       - name: Build
-        run: GOOS=linux GOARCH=amd64 go build -o goplayer
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o goplayer
         shell: bash
 
       - name: Rename binary
@@ -52,11 +49,8 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: Install 32-bit audio dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc-multilib libc6-dev-i386 libasound2-dev:i386
-
       - name: Build
-        run: GOOS=linux GOARCH=386 go build -o goplayer
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -o goplayer
         shell: bash
 
       - name: Rename binary
@@ -81,11 +75,8 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: Install ARM64 cross-compile and audio dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu libasound2-dev:arm64
-
       - name: Build
-        run: CC=aarch64-linux-gnu-gcc GOOS=linux GOARCH=arm64 go build -o goplayer
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o goplayer
         shell: bash
 
       - name: Rename binary
@@ -110,11 +101,8 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: Install ARMv7 cross-compile and audio dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc-arm-linux-gnueabihf libasound2-dev:armhf
-
       - name: Build
-        run: CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=7 go build -o goplayer
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -o goplayer
         shell: bash
 
       - name: Rename binary
