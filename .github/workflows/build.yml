@@ -105,9 +105,8 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      - name: Build Docker image
-        run: docker buildx build --platform linux/arm/v7 -f Dockerfile.armv7 -t goplayer-builder:armv7 .
-        shell: bash
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Build with Docker
         run: |
