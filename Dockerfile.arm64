@@ -1,6 +1,6 @@
 FROM --platform=linux/arm64 golang:1.25-alpine
 
-RUN apk add --no-cache git musl-dev gcc make wget linux-headers pkg-config
+RUN apk add --no-cache git musl-dev gcc make wget linux-headers pkgconf
 
 # Build static ALSA library
 RUN wget -q https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.14.tar.bz2 && \
