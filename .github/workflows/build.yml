@@ -1,0 +1,153 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux-x64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25'
+
+      - name: Install audio dependencies
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+
+      - name: Build
+        run: GOOS=linux GOARCH=amd64 go build -o goplayer
+        shell: bash
+
+      - name: Rename binary
+        run: mv goplayer goplayer-linux-x64
+        shell: bash
+
+      - name: Upload binary
+        uses: softprops/action-gh-release@v1
+        with:
+          files: goplayer-linux-x64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  build-linux-x86:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25'
+
+      - name: Install 32-bit audio dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc-multilib libc6-dev-i386 libasound2-dev:i386
+
+      - name: Build
+        run: GOOS=linux GOARCH=386 go build -o goplayer
+        shell: bash
+
+      - name: Rename binary
+        run: mv goplayer goplayer-linux-x86
+        shell: bash
+
+      - name: Upload binary
+        uses: softprops/action-gh-release@v1
+        with:
+          files: goplayer-linux-x86
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux-arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25'
+
+      - name: Install ARM64 cross-compile and audio dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu libasound2-dev:arm64
+
+      - name: Build
+        run: CC=aarch64-linux-gnu-gcc GOOS=linux GOARCH=arm64 go build -o goplayer
+        shell: bash
+
+      - name: Rename binary
+        run: mv goplayer goplayer-linux-arm64
+        shell: bash
+
+      - name: Upload binary
+        uses: softprops/action-gh-release@v1
+        with:
+          files: goplayer-linux-arm64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux-armv7:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25'
+
+      - name: Install ARMv7 cross-compile and audio dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-linux-gnueabihf libasound2-dev:armhf
+
+      - name: Build
+        run: CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=7 go build -o goplayer
+        shell: bash
+
+      - name: Rename binary
+        run: mv goplayer goplayer-linux-armv7
+        shell: bash
+
+      - name: Upload binary
+        uses: softprops/action-gh-release@v1
+        with:
+          files: goplayer-linux-armv7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows-x64:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25'
+
+      - name: Build
+        run: go build -o goplayer.exe
+        shell: bash
+
+      - name: Rename binary
+        run: mv goplayer.exe goplayer-windows-x64.exe
+        shell: bash
+
+      - name: Upload binary
+        uses: softprops/action-gh-release@v1
+        with:
+          files: goplayer-windows-x64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

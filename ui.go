@@ -153,7 +153,8 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 		}
 	})
 	termui.Handle("timer/1s", func(termui.Event) {
-		if ui.state == Playing {
+		switch ui.state {
+		case Playing:
 			ui.songPos++
 			if ui.songLen != 0 {
 				ui.scrollerGauge.Percent = int(float32(ui.songPos) / float32(ui.songLen) * 100)
@@ -164,7 +165,7 @@ func NewUi(songList []Song, pathPrefix int) (*Ui, error) {
 				termui.Clear()
 				termui.Render(termui.Body)
 			}
-		} else if ui.state == Stopped {
+		case Stopped:
 			ui.songPos = 0
 		}
 	})
